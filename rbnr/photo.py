@@ -18,19 +18,23 @@ class Photo(object):
         assert path.isfile(filename), \
             "Filename %s does not exist" % filename
         assert "#" in filename, \
-            "Filename is missing hash tag in name"
+            "Filename %s is missing hash tag in name" % filename
         assert isinstance(method, methods.base.BaseRecognitionMethod), \
             "Method provided to photo should be subclassed from BaseRecognitionMethod"
         self.filename = filename
         filename_string, label_string = self.filename.split("#")
         self.name = path.basename(filename_string)
         self.labels = set(filter(None, label_string.split('.')[0].split(" ")))
-        self.candidates = method.process(self.filename)
-        self.true_positives = tp = self.candidates & self.labels
-        self.false_positives = fp = self.candidates - self.labels
-        self.false_negatives = fn = self.labels - self.candidates
-        self.precision = tp / (tp + fp)
-        self.recall = tp / (tp + fn)
+        self.candidates = method.process(self)
+        # https://stats.stackexchange.com/a/8026
+        self.true_positives = self.candidates & self.labels
+        self.false_positives = self.candidates - self.labels
+        self.false_negatives = self.labels - self.candidates
+        num_tp = len(self.true_positives)
+        num_fp = len(self.false_positives)
+        num_fn = len(self.false_negatives)
+        self.precision = num_tp / (num_tp + num_fp) if (num_tp + num_fp) != 0 else 0
+        self.recall = num_tp / (num_tp + num_fn) if (num_tp + num_fn) != 0 else 0
 
     def csv(self):
         """
