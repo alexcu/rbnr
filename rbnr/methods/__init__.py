@@ -3,4 +3,4 @@ Defines all methods used to recognise RBNs
 """
 
 import methods.base
-import methods.bibdetect
+import methods.bibnumber
